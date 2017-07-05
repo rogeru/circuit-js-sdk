@@ -4,22 +4,12 @@ Circuit JavaScript SDK
 The Circuit JavaScript SDK can be used **client-side** as a regular JS API, or with Node.js as **server-side** SDK.
 
 
-### Client JS API ###
-
+### Usage ###
 Simply include the circuit.js file in your app by adding the line below to your HTML file.
 
 `<script type="text/javascript" src="https://circuitsandbox.net/circuit.js"></script>`
 
 Examples located at [/examples](/examples).
-
-
-### Server JS API (nodejs) ###
-
-Get the npm module [here](https://circuitsandbox.net/circuit.tgz) and install via:
-`npm install ./circuit.tgz`
-> circuit module is soon available on npmjs.com
-
-View the nodejs examples on [github](https://github.com/circuit).
 
 ### Prerequisites ###
 To use the SDK you need to get free developer account. Get yours today at the [developer portal](https://developers.circuit.com).
