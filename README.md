@@ -10,20 +10,21 @@ Circuit JavaScript SDK
 ### Usage ###
 Include the circuit.js file in your app by adding the line below to your HTML file.
 
-```javascript
+```html
 <script type="text/javascript" src="https://circuitsandbox.net/circuit.js"></script>`
 ```
 
-Examples are located at [/examples](/examples).
+Examples are located at [/examples](/examples). [Try them live](https://rawgit.com/circuit/js-sdk/master/index.html)
 
 ### Prerequisites ###
-To use the SDK you need to get free developer account. Get yours today at the [developer portal](https://developers.circuit.com).
+* Free developer account on circuitsandbox.net. Get it at [developer portal](https://developers.circuit.com).
+* Register OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth)
 
 ### Supported Browsers ###
 Chrome and Firefox are officially supported.
 
 ### Logon ###
-OAuth 2.0 is used for authentication. More info at [circuit.github.com/oauth](https://circuit.github.com/oauth)
+OAuth 2.0 is used for authentication. 
 ```javascript
 // Create a client instance and optionally pass config options
 var client = new Circuit.Client();
