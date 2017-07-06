@@ -1,0 +1,17 @@
+{
+  "name": "circuit-js-sdk",
+  "version": "1.2.1100",
+  "description": "JavaScript SDK for Circuit",
+  "homepage": "http://circuit.com",
+  "bugs": {
+    "url": "https://github.com/circuit/circuit-js-sdk/issues"
+  },
+  "author": {
+    "name": "Roger Urscheler",
+    "email": "roger.urscheler@unify.com"
+  },
+  "license": "Apache 2.0",
+  "contributors": [
+    "Rodrigo Pastro <rodrigo.pastro@unify.com>"
+  ]
+}
