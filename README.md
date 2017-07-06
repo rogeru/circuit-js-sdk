@@ -9,18 +9,18 @@ Circuit JavaScript SDK
 
 
 ### Prerequisites
-* Free developer account on circuitsandbox.net. Get it at [developer portal](https://developers.circuit.com).
-* Register OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth)
+* Developer account on circuitsandbox.net. Get it for free at [Developer registration](https://www.circuit.com/web/developers/registration).
+* Register your OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth) to get a `client_id`.
 
 ### API Reference
 https://circuitsandbox.net/sdk/ with most APIs described at in the [Client](https://circuitsandbox.net/sdk/classes/Client.html) class.
 
 
 ### Usage
-Include the circuit.js file in your app by adding the line below to your HTML file.
+Include circuit.min.js in your app by adding the line below to your HTML file.
 
 ```html
-<script type="text/javascript" src="https://circuitsandbox.net/circuit.js"></script>`
+<script type="text/javascript" src="https://circuitsandbox.net/circuit.min.js"></script>`
 ```
 
 ### Examples
@@ -29,7 +29,7 @@ Examples are located at [/examples](/examples). Try them live [here](https://raw
 Here are some snippets to get an idea:
 
 #### Logon
-OAuth 2.0 is used for authentication. 
+OAuth 2.0 is used for authentication.
 ```javascript
 // Create a client instance and optionally pass config options
 var client = new Circuit.Client();
@@ -49,11 +49,15 @@ client.logon()
 #### Get Conversations
 Options allow retrieving a speific number conversations, their starting timestamp and whether to get conversation before or after that timstamp. This allows paging.
 ```javascript
-client.getConversations({
-  direction: Circuit.Enums.SearchDirection.BEFORE,
-  numberOfConversations: 10
-})
-.then(conversations => console.log(`Retrieved ${conversations.length} conversations`))
+client.getConversations({numberOfConversations: 10})
+  .then(conversations => console.log(`Retrieved ${conversations.length} conversations`))
+```
+
+#### Call Conversations
+Start a video call with another user. Create conversation is not yet existing.
+```javascript
+client.makeCall('bob@company.com', {audio: true, video: true}, true)
+  .then(call => console.log('New call: ', call));
 ```
 
 #### Listen for events
@@ -74,6 +78,7 @@ Circuit.Injectors.itemInjector = function (item) {
   }
 };
 ```
+
 ### Supported Browsers
 Chrome and Firefox are officially supported.
 
