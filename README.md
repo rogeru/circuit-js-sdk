@@ -24,7 +24,9 @@ Include the circuit.js file in your app by adding the line below to your HTML fi
 ```
 
 ### Examples
-Examples are located at [/examples](/examples). [Try them live](https://rawgit.com/circuit/js-sdk/master/index.html)
+Examples are located at [/examples](/examples). Try them live [here](https://rawgit.com/circuit/js-sdk/master/index.html).
+
+Here are some snippets to get an idea:
 
 #### Logon
 OAuth 2.0 is used for authentication. 
