@@ -15,69 +15,186 @@
  *  limitations under the License.
  *
  -->
-<html>
+<html lang="en">
   <head>
     <title>Circuit JS-SDK</title>
     <style>
-      body {
-        font-family: sans-serif;
-      }
+      body { font-family: sans-serif; font-size: 12px;}
       section { padding-top: 20px; }
-      input { margin-right: 10px; }
-      button {
-        margin-right: 10px;
-      }
-      pre {padding: 5px; margin: 5px; }
+      input { margin-left: 10px; }
+      pre { padding: 5px; margin: 5px; }
+      #error { color: red; }
       .string { color: green; }
       .number { color: darkorange; }
       .boolean { color: blue; }
       .null { color: magenta; }
       .key { color: red; }
-      .error { color: red; }
     </style>
+    <script src="https://circuitsandbox.net/circuit.js"></script>
   </head>
+
   <body>
-    <h2>Circuit JS-SDK examples</h2>
+    <h3>Circuit JS SDK - Introduction example</h3>
     <div>
-      <a href="/">&#8678; Back</a>
+      This example shows how to:
+      <ul>
+        <li>logon using OAuth2</li>
+        <li>read the most recent conversation</li>
+        <li>setup injectors to enhance the conversation, item and user data objects recevied from the server</li>
+        <li>fetch the most recent conversation again, but this time with the injector</li>
+        <li>listen to various events such as conversationCreated</li>
+      </ul>
     </div>
-    <h3>Introduction</h3>
-    <div>
-      This is a basic example to test logon and logout and getting a list of most recent conversations.<br>
-    </div>
-    <section id="domainSection" style="display: none">
-      <span>Connect to:</span>
-      <select id="domain">
-        <option value="circuitsandbox.net">circuitsandbox.net</option>
-        <option value="circuitdev.unify.com:8094">circuitdev.unify.com:8094</option>
-      </select>
-    </section>
-    <section id="connectSection" style="display: none">
-      <input type="email" id="email" placeholder="Email address" value="circuitsdk01@gmail.com"/>
-      <input type="password" id="password" placeholder="Password"/>
-      <button id="logon" onclick="logon()" style="">Logon</button>
-      <button id="logout" onclick="logout()" style="display: none">Logout</button>
-      <button id="conversation" onclick="getMostRecentConversation()" style="display: none">Get most recent conversation</button>
-    </section>
+
+    <button onclick="run()">Fetch most recent conversation</button>
     <section id="output"></section>
 
-    <script src="https://circuitsandbox.net/circuit.js"></script>
-    <script type='text/javascript'>
-      var domain = document.getElementById('domain');
-      var email = document.getElementById('email');
-      var password = document.getElementById('password');
-      var logonButton = document.getElementById('logon');
-      var logoutButton = document.getElementById('logout');
-      var conversationButton = document.getElementById('conversation');
-      var outputElement = document.getElementById('output');
+    <script>
+      if (typeof Circuit === 'undefined') {
+        alert('Could not load SDK (circuit.js).');
+      } else if (!Circuit.isCompatible()) {
+        alert('Sorry, your browser is not supported. Use Chrome or Firefox.');
+      }
 
-      // Create a new Circuit SDK client
-      var client = new Circuit.Client({domain: domain.value});
+      // Displays SDK internal logs in console
+      // Circuit.logger.setLevel(Circuit.Enums.LogLevel.Debug);
 
+      // Create a new Circuit SDK client. Pass the OAuth2 client_id for this app
+      var client = new Circuit.Client({
+        domain: 'circuitsandbox.net',
+        client_id: '78cafde2f6854ad5ad80a67c532687bc',
+        scope: 'ALL' // Asking for ALL permissions because all these examples use the same domain
+      });
+
+      // Logon using OAuth2, then fetch the most recent conversation and print the conversation
+      // object. Then add the injectors and fetch the most recent conversation again. You will
+      // see the additional attribute add the the conversation object by the injectors.
+      function run() {
+        client.logon()
+        .then(user => output(`>>> Logged in as ${user.displayName}`))
+        .then(getMostRecentConversation)
+        .then(conversations => output('>>> Most recent conversation (prior to injector):', conversations[0]))
+        .then(addConversationAndItemInjectors)
+        .then(getMostRecentConversation)
+        .then(conversations => output('>>> Most recent conversation (after to injector):', conversations[0]))
+        .catch(error);
+      }
+
+      var getMostRecentConversation = client.getConversations.bind(client, {direction: 'BEFORE', numberOfConversations: 1});
+
+      // Circuit.Injectors functions are called by the SDK when a conversation is
+      // returned from the server, whether its for responses or events.
+      // These injectors are optional. When defined, they can be regular synchroneous
+      // functions, or promises like in conversation injector example below.
+      function addConversationAndItemInjectors() {
+
+        // The conversation injector example needs to be asynchroneous since the
+        // user lookup is an API call.
+        Circuit.Injectors.conversationInjector = conversation => {
+          return new Promise((resolve, reject) => {
+            // Get user objects for participant userIds other than mine,
+            // then set the 'otherUsers', 'creator' and 'topLevelItem.creator'
+            // attributes. Then also set the 'title' attribute.
+            var userIds = conversation.participants.filter(p => {
+              return p !== client.loggedOnUser.userId;
+            });
+            client.getUsersById(userIds).then(users => {
+              // Set conversation.otherUsers
+              conversation.otherUsers = users;
+
+              // Set conversation.creator
+              if (conversation.creatorId === client.loggedOnUser.userId) {
+                conversation.creator = client.loggedOnUser;
+              } else {
+                conversation.creator = users.find(u => u.userId === conversation.creatorId);
+              }
+
+              // Set conversation.topLevelItem.creator
+              if (conversation.topLevelItem) {
+                if (conversation.topLevelItem.creatorId === client.loggedOnUser.userId) {
+                  conversation.topLevelItem.creator = client.loggedOnUser;
+                } else {
+                  conversation.topLevelItem.creator = users.find(u => {
+                    return u.userId === conversation.topLevelItem.creatorId;
+                  });
+                }
+              }
+
+              // Set conversation.title
+              if (conversation.type === 'DIRECT') {
+                conversation.title = conversation.otherUsers[0].displayName;
+              } else {
+                conversation.title = conversation.topic || conversation.otherUsers.map(u => {
+                  return u.displayName;
+                }).join(', ');
+              }
+
+              resolve(conversation);
+            }, err => reject);
+          });
+        }
+
+        // Define a item injector to create a teaser text
+        Circuit.Injectors.itemInjector = item => {
+          if (item.type === 'TEXT') {
+            // Create item.teaser attribute with replacing br and hr tags with a space
+            item.teaser = item.text.content.replace(/<(br[\/]?|\/li|hr[\/]?)>/gi, ' ');
+          } else {
+            item.teaser = item.type;
+          }
+        };
+      }
+
+      // Define a user injector to override the avatar if user does not have one.
+      // This injector does not need to be async, so a regular function can be used.
+      Circuit.Injectors.userInjector = user => {
+        if (!user.smallImageUri) {
+          user.avatar = 'http://www.aceshowbiz.com/images/photo/chuck_norris.jpg';
+          user.avatarLarge = 'http://www.aceshowbiz.com/images/photo/chuck_norris.jpg';
+        }
+      };
+
+      // Example for listening to different events
+      client.addEventListener('itemAdded', item => output('itemAdded event received:', item));
+      client.addEventListener('itemUpdated', item => output('itemUpdated event received:', item));
+      client.addEventListener('conversationCreated', conv => output('conversationCreated event received:', conv));
+      client.addEventListener('conversationUpdated', conv => output('conversationUpdated event received:', conv));
+
+      // This event requires a presence subscription via subscribePresence(userIDs)
+      client.addEventListener('userPresenceChanged', presence => output('userPresenceChanged event received:', presence));
+
+      // Event is only dispatched to my own other clients to keep them in sync.
+      // At this time there is no event for other user updates other than the
+      // userPresenceChanged event above
+      client.addEventListener('userUpdated', user => output('user event received:'));
+
+      /* Comment out to keep the log clean
+          client.addEventListener('connectionStateChanged', state => output('connectionStateChanged event received:', state));
+      */
+
+      // Helper methods for displaying results
+      function error(e) {
+        console.log(e);
+        output(e.message);
+      }
+
+      function output(msg, obj) {
+        var el = document.getElementById('output');
+        if (msg) {
+          el.appendChild(document.createElement('pre')).innerText = msg + '\n';
+        }
+        if (obj) {
+          if (typeof(obj) === 'object') {
+            obj = JSON.stringify(obj, undefined, 4);
+            obj = syntaxHighlight(obj);
+          }
+          el.appendChild(document.createElement('pre')).innerHTML = obj;
+        }
+      }
 
       function syntaxHighlight(json) {
         json = json.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, function (match) {
+        return json.replace(/("(\\u[a-zA-Z0-9]{4}|\\[^u]|[^\\"])*"(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?)/g, match => {
           var cls = 'number';
           if (/^"/.test(match)) {
             if (/:$/.test(match)) {
@@ -93,231 +210,7 @@
           return '<span class="' + cls + '">' + match + '</span>';
         });
       }
-
-      function clearOutput() {
-        while (outputElement.firstChild) {
-          outputElement.removeChild(outputElement.firstChild);
-        }
-      }
-
-      // Helper methods for displaying results
-      function output(input) {
-        if (typeof input === 'object') {
-          input = JSON.stringify(input, undefined, 4);
-          input = syntaxHighlight(input);
-        }
-        outputElement.appendChild(document.createElement('pre')).innerHTML = input;
-      }
-
-      // Circuit.Injectors functions are called by the SDK when a conversation is
-      // returned from the server, whether its for responses or events. These
-      // injectors are optional. When defined, they can be regular synchroneous
-      // functions, or promises like in conversation injector example below.
-      function addConversationAndItemInjectors() {
-        // The conversation injector example needs to be asynchroneous since the
-        // user lookup is an API call.
-        Circuit.Injectors.conversationInjector = function (conversation) {
-          return new Promise(function (resolve, reject) {
-            // Get user objects for participant userIds other than mine,
-            // then set the 'otherUsers', 'creator' and 'topLevelItem.creator'
-            // attributes. Then also set the 'title' attribute.
-            var userIds = conversation.participants.filter(function (p) {
-              return p !== client.loggedOnUser.userId;
-            });
-            client.getUsersById(userIds).then(function (users) {
-              // Set conversation.otherUsers
-              conversation.otherUsers = users;
-
-              // Set conversation.creator
-              if (conversation.creatorId === client.loggedOnUser.userId) {
-                conversation.creator = client.loggedOnUser;
-              } else {
-                conversation.creator = users.find(function (u) {
-                  u.userId === conversation.creatorId;
-                });
-              }
-
-              // Set conversation.topLevelItem.creator
-              if (conversation.topLevelItem) {
-                if (conversation.topLevelItem.creatorId === client.loggedOnUser.userId) {
-                  conversation.topLevelItem.creator = client.loggedOnUser;
-                } else {
-                  conversation.topLevelItem.creator = users.find(function (u) {
-                    return u.userId === conversation.topLevelItem.creatorId;
-                  });
-                }
-              }
-
-              // Set conversation.title
-              if (conversation.type === 'DIRECT') {
-                conversation.title = conversation.otherUsers[0].displayName;
-              } else {
-                conversation.title = conversation.topic || conversation.otherUsers.map(function (u) {
-                  return u.displayName;
-                }).join(', ');
-              }
-
-              resolve(conversation);
-            }, function (err) {
-              reject(err);
-            });
-          });
-        }
-
-        // Define a item injector to create a teaser text
-        Circuit.Injectors.itemInjector = function (item) {
-          if (item.type === 'TEXT') {
-            // Create item.teaser attribute with replacing br and hr tags with a space
-            item.teaser = item.text.content.replace(/<(br[\/]?|\/li|hr[\/]?)>/gi, ' ');
-          } else {
-            item.teaser = item.type;
-          }
-        };
-
-      }
-
-      if (typeof Circuit === 'undefined') {
-        output('<span class="error">Could not load SDK (circuit.js). Make sure Circuit is running on https://circuitsandbox.net.</span>');
-      } else {
-        document.getElementById('domainSection').style.display = '';
-        document.getElementById('connectSection').style.display = '';
-
-        // Define a user injector to override the avatar if user does not have one.
-        // This injector does not need to be async, so a regular function can be used.
-        Circuit.Injectors.userInjector = function (user) {
-          if (!user.smallImageUri) {
-            user.avatar = 'http://www.aceshowbiz.com/images/photo/chuck_norris.jpg';
-            user.avatarLarge = 'http://www.aceshowbiz.com/images/photo/chuck_norris.jpg';
-          }
-        };
-      }
-
-      // Attempt to login with browser cookie by not passing in any credentials.
-      client.logon().then(logonSuccessCb, function (err) {
-        output('No cookie available or no session exists. Ask user for credentials.');
-      });
-
-      function logonSuccessCb(user) {
-          output('Logged in as ' + user.displayName);
-          output(user);
-          domain.disabled = true;
-          email.disabled = true;
-          password.disabled = true;
-          logonButton.style.display = 'none';
-          logoutButton.style.display = '';
-          conversationButton.style.display = '';
-      }
-
-      function logonErrorCb(e) {
-          output('Unable to logon. Error: ' + e);
-          client.removeAllListeners();
-      }
-
-      function addClientEventListeners() {
-        if (client) {
-          // Example for listening to different events
-          client.addEventListener('itemAdded', function onItemAdded(item) {
-            output('itemAdded event received:');
-            output(item);
-          });
-
-          client.addEventListener('itemUpdated', function onItemUpdated(item) {
-            output('itemUpdated event received:');
-            output(item);
-          });
-
-          client.addEventListener('conversationCreated', function onConversationCreated(conv) {
-            output('conversationCreated event received:');
-            output(conv);
-          });
-
-          client.addEventListener('conversationUpdated', function onConversationUpdated(conv) {
-            output('conversationUpdated event received:');
-            output(conv);
-          });
-
-          // This event requires a presence subscription via subscribePresence(userIDs)
-          client.addEventListener('userPresenceChanged', function onUserPresenceChanged(presence) {
-            output('userPresenceChanged event received:');
-            output(presence);
-          });
-
-          // Event is only dispatched to my own other clients to keep them in sync.
-          // At this time there is no event for other user updates other than the
-          // userPresenceChanged event above
-          client.addEventListener('userUpdated', function onUserUpdated(user) {
-            output('user event received:');
-            output(user);
-          });
-
-          client.addEventListener('reconnectFailed', function onReconnectFailed() {
-            output('reconnectFailed event received');
-          });
-
-          client.addEventListener('connectionStateChanged', function onConnectionStateChanged(evt) {
-            output('Received connectionStateChanged event - state = ' + evt.state)
-          });
-        }
-      }
-
-      function logon() {
-        if (!email.value || !password.value) {
-          output('Missing email or password');
-          return;
-        }
-        clearOutput();
-
-        output('Signing in as ' + email.value + ' on ' + domain.value + ' ...');
-        addClientEventListeners();
-
-        client.logon(email.value, password.value)
-          .then(logonSuccessCb)
-          .catch(logonErrorCb);
-      }
-
-      function logout() {
-        if (!client) {
-          return;
-        }
-        client.logout();
-        client.removeAllListeners();
-
-        domain.disabled = false;
-        email.disabled = false;
-        password.disabled = false;
-        logonButton.style.display = '';
-        logoutButton.style.display = 'none';
-        conversationButton.style.display = 'none';
-
-        clearOutput();
-        output('Logged out');
-      }
-
-      // Get most recent conversation twice. First without the conversation inject
-      // implementation to view the raw conversation attributes, then again with
-      // the injector showing the extended attributes.
-      function getMostRecentConversation() {
-        var options = {direction: 'BEFORE', numberOfConversations: 1};
-        client.getConversations(options)
-        .then(function (conversations) {
-          output('Most recent conversation (prior to injector):');
-          output(conversations[0]);
-
-          // Add conversation and item injectors
-          addConversationAndItemInjectors();
-
-          // return options to be passed into getConversations below
-          return options;
-        })
-        .then(client.getConversations)
-        .then(function (conversations) {
-          output('Most recent conversation (after injector enhanced conversation):');
-          output(conversations[0]);
-        })
-        .catch(function (err) {
-          output(err);
-        })
-      }
     </script>
-   </body>
- <html>
+  </body>
+</html>
+

@@ -43,27 +43,25 @@
       .hide { display: none;}
     </style>
   </head>
+
   <body>
-    <h2>Circuit JS-SDK examples</h2>
+    <h3>Group Call with video and screenshare</h3>
     <div>
-      <a href="/">&#8678; Back</a>
-    </div>
-    <h3>Group call</h3>
-    <div>
-      In this example you can start, join or leave a conference call, toggle video. Only up to two remote participants are shown in this example.<br>
-      For screenshare the Circuit SDK Chrome Extension is required. This SDK extension is available at https://github.com/circuit/screenshare-chrome-extension with wildcard permissions.<br>
+      This example shows how to:
+      <ul>
+        <li>fetch conversations and list their title</li>
+        <li>add injector to create conversation title</li>
+        <li>start, join and leave a conference call</li>
+        <li>toggle video</li>
+        <li>pulling a call on a different device</li>
+        <li>record session and download recording (recording is also posted to conversation)</li>
+        <li>toggle screenshare (requires <a href="https://github.com/circuit/screenshare-chrome-extension" target="_blank">Circuit SDK Chrome Extension</a>)</li>
+        <li>listen to various events such as callStatus and callEnded</li>
+        <li>display call state, media state, conv and call ID</li>
+      </ul>
     </div>
     <div id="mainWrapper" style="display: none">
-      <section id="domainSection">
-        <span>Connect to:</span>
-        <select id="domain">
-          <option value="circuitsandbox.net">circuitsandbox.net</option>
-          <option value="circuitdev.unify.com:8094">circuitdev.unify.com:8094</option>
-        </select>
-      </section>
       <section id="connectSection">
-        <input type="email" id="email" placeholder="Email address" value="michael.rodenbuecher@unify.com"/>
-        <input type="password" id="password" placeholder="Password"/>
         <button id="logon" onclick="logon()" style="">Logon</button>
         <button id="logout" onclick="logout()" style="display: none">Logout</button>
         <span>(<span id="logonState">Disconnected</span>)</span>
@@ -109,9 +107,6 @@
       var _conversations = {};  // Hashtable of converastions with convId as key
       var _calls = {};          // Hashtable of calls with convId as key
 
-      var $domain = document.getElementById('domain');
-      var $email = document.getElementById('email');
-      var $password = document.getElementById('password');
       var $logonButton = document.getElementById('logon');
       var $logoutButton = document.getElementById('logout');
       var $logonState = document.getElementById('logonState');
@@ -145,7 +140,8 @@
         document.getElementById('mainWrapper').style.display = 'block';
       }
 
-      Circuit.logger.setLevel(Circuit.Enums.LogLevel.Debug);
+      // Displays SDK internal logs in console
+      // Circuit.logger.setLevel(Circuit.Enums.LogLevel.Debug);
 
       // Helper function to get the list element
       function getListOption(convId) {
@@ -357,21 +353,19 @@
       }
 
       function logon() {
-        if (_client || !$email.value || !$password.value) {
-          return;
-        }
-        _client = new Circuit.Client({domain: $domain.value});
+        _client = new Circuit.Client({
+          client_id: '78cafde2f6854ad5ad80a67c532687bc',
+          scope: 'ALL' // Asking for ALL permissions because all these examples use the same domain
+        });
+
         addClientEventListeners();
 
-        _client.logon($email.value, $password.value).then(function (user) {
+        _client.logon().then(function (user) {
           _localUser = user;
-          $domain.disabled = true;
-          $email.disabled = true;
-          $password.disabled = true;
           $logonButton.style.display = 'none';
           $logoutButton.style.display = '';
         })
-        .then(_client.getConversations)
+        .then(() => _client.getConversations({direction: 'BEFORE'}))
         .then(populateDropdown)
         .then(_client.getCalls)
         .then(cacheCalls)
@@ -395,9 +389,6 @@
         _calls = {};
 
         $convList.options.length = 0;
-        $domain.disabled = false;
-        $email.disabled = false;
-        $password.disabled = false;
         $logonButton.style.display = '';
         $logoutButton.style.display = 'none';
         $logonState.textContent = 'Disconnected';
@@ -461,7 +452,7 @@
 
       function populateDropdown(conversations) {
         _conversations = {};
-        conversations.filter(function (c) {
+        conversations.reverse().filter(function (c) {
           if (c && c.type === Circuit.Enums.ConversationType.GROUP) {
             _conversations[c.convId] = c;
             return true;
@@ -487,20 +478,19 @@
 
             // Set conversation.title
             if (conversation.type === 'DIRECT') {
-              var peerUser = conversation.otherUsers[0];
-              if (peerUser.userType === Circuit.Constants.UserType.TELEPHONY) {
-                // This is the telephony conversation
-                resolve(null);
-                return;
-              }
-              conversation.title = peerUser.displayName;
+              conversation.title = conversation.otherUsers[0].displayName;
             } else {
               conversation.title = conversation.topic || conversation.otherUsers.map(function (u) {
                 return u.firstName;
               }).join(', ');
             }
 
-            resolve(conversation);
+            // Find telephony conversation to be excluded
+            var telephonyConv = conversation.otherUsers.find(function (user) {
+              return user.roles && user.roles.indexOf(Circuit.Enums.UserRole.VIRTUAL_TELEPHONY_CONNECTOR) !== -1;
+            });
+
+            resolve(telephonyConv ? null : conversation);
           }, function (err) {
             reject(err);
           });
@@ -511,3 +501,4 @@
     </script>
   </body>
 </html>
+

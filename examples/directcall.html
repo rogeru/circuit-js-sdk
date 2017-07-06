@@ -21,8 +21,9 @@
     <style>
       body {
         font-family: sans-serif;
+        font-size: 12px;
       }
-      section { padding-top: 20px; }
+      section { padding-top: 15px; }
       input { margin-right: 10px; }
       button {
         margin-right: 10px;
@@ -40,32 +41,28 @@
         color: red;
       }
     </style>
+    <script src="https://dl.dropboxusercontent.com/s/tr39vkzhv5dnsym/circuit.js?dl=0"></script>
   </head>
+
   <body>
-    <h2>Circuit JS-SDK examples</h2>
-    <div>
-      <a href="/">&#8678; Back</a>
-    </div>
-    <h3>Direct call</h3>
-    <div>
-      In this example you can initiate a direct call to another user.<br>
-    </div>
+    <h3>Direct call (audio & video)</h3>
+    <p>
+      New to <a href="https://www.circuit.com/" target="_blank">Circuit</a>? <a href="https://developers.circuit.com/registration"  target="_blank">Register</a> for a <a href="https://developers.circuit.com"  target="_blank">developer</a> account.
+    </p>
+    <p>In this example you can initiate a direct call to another Circuit user and toggle video.</p>
     <div id="mainWrapper" style="display: none">
       <section id="domainSection">
         <span>Connect to:</span>
         <select id="domain">
           <option value="circuitsandbox.net">circuitsandbox.net</option>
-          <option value="circuitdev.unify.com:8094">circuitdev.unify.com:8094</option>
         </select>
       </section>
       <section id="connectSection">
-        <input type="email" id="email" placeholder="Email address" value="michael.rodenbuecher@unify.com"/>
-        <input type="password" id="password" placeholder="Password"/>
         <button id="logon" onclick="logon()" style="">Logon</button>
         <button id="logout" onclick="logout()" style="display: none">Logout</button>
       </section>
       <section>
-        <input type="email" id="peerUser" placeholder="Callee's Circuit email" value="anke.richter@unify.com"/>
+        <input type="email" id="peerUser" placeholder="Callee's Circuit email" value="circuitsdk02@gmail.com"/>
         <button onclick="call()" id="callButton">Call</button>
         <button onclick="endCall()" id="endCallButton" style="display: none">End call</button>
       </section>
@@ -79,16 +76,13 @@
         <div>Conversation ID: <span id="convId"></span></div>
         <div>Call ID: <span id="callId"></span></div>
         <div>
-          <video id="localVideo" width="200px" autoplay="true"></video>
-          <video id="remoteVideo" width="200px" autoplay="true"></video>
+          <video id="localVideo" height="200px" autoplay="true"></video>
+          <video id="remoteVideo" height="200px" autoplay="true"></video>
         </div>
       </section>
     </div>
     <span id="errorMessage" style="display: none"></span>
     <audio id="remoteAudio" autoplay="autoplay"></audio>
-
-    <script src="https://circuitsandbox.net/circuit.js"></script>
-
     <script>
       var _client;
       var _localUser;
@@ -96,8 +90,6 @@
       var _call;
 
       var $domain = document.getElementById('domain');
-      var $email = document.getElementById('email');
-      var $password = document.getElementById('password');
       var $peerUser = document.getElementById('peerUser');
       var $logonButton = document.getElementById('logon');
       var $logoutButton = document.getElementById('logout');
@@ -116,7 +108,7 @@
       var $errorMessage = document.getElementById('errorMessage');
 
       if (typeof Circuit === 'undefined') {
-        $errorMessage.textContent = "Could not load SDK (circuit.js).";
+        $errorMessage.textContent = "Could not load SDK (circuit.js). Make sure Circuit is running on https://localhost:8094.";
         $errorMessage.style.display = 'block';
       } else if (!Circuit.isCompatible()) {
         $errorMessage.textContent = "Sorry, your browser is not supported. Chrome works :)";
@@ -201,17 +193,19 @@
       }
 
       function logon() {
-        if (_client || !$email.value || !$password.value) {
+        if (_client) {
           return;
         }
-        _client = new Circuit.Client({domain: $domain.value});
+        _client = new Circuit.Client({
+          domain: $domain.value,
+          client_id: '78cafde2f6854ad5ad80a67c532687bc',
+          scope: 'ALL' // Asking for ALL permissions because all these examples use the same domain
+        });
         addClientEventListeners();
 
-        _client.logon($email.value, $password.value).then(function (user) {
+        _client.logon().then(function (user) {
           _localUser = user;
           $domain.disabled = true;
-          $email.disabled = true;
-          $password.disabled = true;
           $logonButton.style.display = 'none';
           $logoutButton.style.display = '';
         }).catch(function (e) {
@@ -232,8 +226,6 @@
         _client = null;
 
         $domain.disabled = false;
-        $email.disabled = false;
-        $password.disabled = false;
         $logonButton.style.display = '';
         $logoutButton.style.display = 'none';
         $logonState.textContent = 'Disconnected';
@@ -249,8 +241,8 @@
 
         var mediaType = {audio: true, video: enableVideo.checked};
         _client.makeCall($peerUser.value, mediaType)
-        .then(setCallUI)
-        .catch(function (err) {
+          .then(setCallUI)
+          .catch(function (err) {
           alert('Error initiating a call with ' + $peerUser.value + '. ' + err);
           console.error(err);
         });
@@ -280,3 +272,4 @@
     </script>
   </body>
 </html>
+

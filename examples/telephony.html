@@ -21,6 +21,7 @@
     <style>
       body {
         font-family: sans-serif;
+        font-size: 12px;
       }
       section { padding-top: 20px; }
       input { margin-right: 10px; }
@@ -50,27 +51,23 @@
       #dtmf button:active {background: #ddd;}
       #dtmf button:focus {outline:0;}
     </style>
+    <script src="https://circuitsandbox.net/circuit.js"></script>
   </head>
+
   <body>
-    <h2>Circuit JS-SDK examples</h2>
-    <div>
-      <a href="/">&#8678; Back</a>
-    </div>
     <h3>Telephony call</h3>
     <div>
-      In this example you can initiate a telephony call.<br>
+      Make outgoing phone calls to any regular telephone. Telephony Connector needs to be setup for your tenant.<br>
+      Use this page with https to allow access to your microphone.
     </div>
     <div id="mainWrapper" style="display: none">
       <section id="domainSection">
         <span>Connect to:</span>
         <select id="domain">
           <option value="circuitsandbox.net">circuitsandbox.net</option>
-          <option value="circuitdev.unify.com:8094">circuitdev.unify.com:8094</option>
         </select>
       </section>
       <section id="connectSection">
-        <input type="email" id="email" placeholder="Email address" value="circuitsdk01@gmail.com"/>
-        <input type="password" id="password" placeholder="Password"/>
         <button id="logon" onclick="logon()" style="">Logon</button>
         <button id="logout" onclick="logout()" style="display: none">Logout</button>
       </section>
@@ -98,8 +95,6 @@
     <span id="errorMessage" style="display: none"></span>
     <audio id="remoteAudio" autoplay="autoplay"></audio>
 
-    <script src="https://circuitsandbox.net/circuit.js"></script>
-
     <script>
       var _client;
       var _localUser;
@@ -107,8 +102,6 @@
       var _call;
 
       var $domain = document.getElementById('domain');
-      var $email = document.getElementById('email');
-      var $password = document.getElementById('password');
       var $number = document.getElementById('number');
       var $logonButton = document.getElementById('logon');
       var $logoutButton = document.getElementById('logout');
@@ -177,17 +170,19 @@
       }
 
       function logon() {
-        if (_client || !$email.value || !$password.value) {
+        if (_client) {
           return;
         }
-        _client = new Circuit.Client({domain: $domain.value});
+        _client = new Circuit.Client({
+          domain: $domain.value,
+          client_id: '78cafde2f6854ad5ad80a67c532687bc',
+          scope: 'ALL' // Asking for ALL permissions because all these examples use the same domain
+        });
         addClientEventListeners();
 
-        _client.logon($email.value, $password.value).then(function (user) {
+        _client.logon().then(function (user) {
           _localUser = user;
           $domain.disabled = true;
-          $email.disabled = true;
-          $password.disabled = true;
           $logonButton.style.display = 'none';
           $logoutButton.style.display = '';
         }).catch(function (e) {
@@ -208,8 +203,6 @@
         _client = null;
 
         $domain.disabled = false;
-        $email.disabled = false;
-        $password.disabled = false;
         $logonButton.style.display = '';
         $logoutButton.style.display = 'none';
         $logonState.textContent = 'Disconnected';
@@ -225,8 +218,8 @@
 
         var mediaType = {audio: true, video: false};
         _client.dialNumber($number.value, null, mediaType)
-        .then(setCallUI)
-        .catch(function (err) {
+          .then(setCallUI)
+          .catch(function (err) {
           alert('Error initiating a call with ' + $number.value + '. ' + err);
           console.error(err);
         });
@@ -238,7 +231,7 @@
 
         var mediaType = {audio: true, video: false};
         _client.sendDigits(_call.callId, digit)
-        .catch(function (err) {
+          .catch(function (err) {
           alert('Error sending DTMF digits. ' + err);
           console.error(err);
         });
@@ -258,3 +251,4 @@
     </script>
   </body>
 </html>
+
