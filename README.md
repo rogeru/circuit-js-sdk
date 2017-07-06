@@ -7,26 +7,26 @@ Circuit JavaScript SDK
 > For Node.js SDK see [circuit-nodejs-sdk](https://github.com/circuit/circuit-nodejs-sdk)
 
 
-### Usage ###
+
+### Prerequisites
+* Free developer account on circuitsandbox.net. Get it at [developer portal](https://developers.circuit.com).
+* Register OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth)
+
+### API Reference
+https://circuitsandbox.net/sdk/ with most APIs described at in the [Client](https://circuitsandbox.net/sdk/classes/Client.html) class.
+
+
+### Usage
 Include the circuit.js file in your app by adding the line below to your HTML file.
 
 ```html
 <script type="text/javascript" src="https://circuitsandbox.net/circuit.js"></script>`
 ```
 
+### Examples
 Examples are located at [/examples](/examples). [Try them live](https://rawgit.com/circuit/js-sdk/master/index.html)
 
-### Prerequisites ###
-* Free developer account on circuitsandbox.net. Get it at [developer portal](https://developers.circuit.com).
-* Register OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth)
-
-### API Reference ###
-https://circuitsandbox.net/sdk/ with most APIs described at in the [Client](https://circuitsandbox.net/sdk/classes/Client.html) class.
-
-### Supported Browsers ###
-Chrome and Firefox are officially supported.
-
-### Logon ###
+#### Logon
 OAuth 2.0 is used for authentication. 
 ```javascript
 // Create a client instance and optionally pass config options
@@ -44,19 +44,19 @@ client.logon()
   .catch(console.error);
 ```
 
-### Get Conversations ###
+#### Get Conversations
 Options allow retrieving a speific number conversations, their starting timestamp and whether to get conversation before or after that timstamp. This allows paging.
 ```javascript
 client.getConversations({direction: Circuit.Enums.SearchDirection.BEFORE, numberOfConversations: 10})
   .then(conversations => console.log(`Count ${conversations.length}`))
 ```
 
-### Listen for events ###
+#### Listen for events
 ```javascript
 client.addEventListener('itemAdded', item => console.log('itemAdded event received:', item));
 ```
 
-### Create an injector ###
+#### Create an injector
 Injectors allow extending the conversation, item and user objects within the SDK.
 In this example a new attribute `teaser` is created on the item object.
 ```javascript
@@ -69,4 +69,6 @@ Circuit.Injectors.itemInjector = function (item) {
   }
 };
 ```
+### Supported Browsers
+Chrome and Firefox are officially supported.
 
