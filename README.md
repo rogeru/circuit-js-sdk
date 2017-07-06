@@ -49,8 +49,11 @@ client.logon()
 #### Get Conversations
 Options allow retrieving a speific number conversations, their starting timestamp and whether to get conversation before or after that timstamp. This allows paging.
 ```javascript
-client.getConversations({direction: Circuit.Enums.SearchDirection.BEFORE, numberOfConversations: 10})
-  .then(conversations => console.log(`Count ${conversations.length}`))
+client.getConversations({
+  direction: Circuit.Enums.SearchDirection.BEFORE,
+  numberOfConversations: 10
+})
+.then(conversations => console.log(`Retrieved ${conversations.length} conversations`))
 ```
 
 #### Listen for events
