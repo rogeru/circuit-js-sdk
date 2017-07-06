@@ -4,8 +4,8 @@
 
 Try them [here](https://rawgit.com/circuit/circuit-js-sdk/master/examples/index.html).
 
-Use your own sandbox account, or one of the playground accounts:
-* todo
+Use your own sandbox account, or one of the following playground accounts:
+* coming...
 
 
 
@@ -19,5 +19,5 @@ git clone https://github.com/circuit/circuit-js-sdk.git
 cd circuit-js-sdk
 npm i -g http-server
 http-server -p 7000
-// browse to http://localhost:7000
+// browse to http://localhost:7000/examples
 ```
