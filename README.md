@@ -1,10 +1,10 @@
 Circuit JavaScript SDK
 ======================
 
-[![GitHub release](https://img.shields.io/github/release/qubyte/rubidium.svg)](https://github.com/circuit/circuit-js-sdk)
+[![GitHub release](https://img.shields.io/github/release/circuit/circuit-js-sdk.svg)](https://github.com/circuit/circuit-js-sdk)
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
-> For Node.js see [circuit-nodejs-sdk](https://github.com/circuit/circuit-nodejs-sdk)
+> For Node.js SDK see [circuit-nodejs-sdk](https://github.com/circuit/circuit-nodejs-sdk)
 
 
 ### Usage ###
