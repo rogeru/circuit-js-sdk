@@ -20,6 +20,9 @@ Examples are located at [/examples](/examples). [Try them live](https://rawgit.c
 * Free developer account on circuitsandbox.net. Get it at [developer portal](https://developers.circuit.com).
 * Register OAuth 2.0 app at [circuit.github.com/oauth](https://circuit.github.com/oauth)
 
+### API Reference ###
+https://circuitsandbox.net/sdk/ with most APIs described at in the [Client](https://circuitsandbox.net/sdk/classes/Client.html) class.
+
 ### Supported Browsers ###
 Chrome and Firefox are officially supported.
 
@@ -30,22 +33,22 @@ OAuth 2.0 is used for authentication.
 var client = new Circuit.Client();
 
 // Create Circuit client instance for OAuth 2.0 (Implicit Grant) on the sandbox system
- var client = new Circuit.Client({
-   client_id: '<your client_id>',
-   scope: 'ALL',
-   domain: 'circuitsandbox.net'
- });
+var client = new Circuit.Client({
+  client_id: '<your client_id>',
+  scope: 'ALL',
+  domain: 'circuitsandbox.net'
+});
 
- client.logon()
-   .then(user => console.log('Logged on as ' + user.displayName))
-   .catch(console.error);
+client.logon()
+  .then(user => console.log('Logged on as ' + user.displayName))
+  .catch(console.error);
 ```
 
 ### Get Conversations ###
 Options allow retrieving a speific number conversations, their starting timestamp and whether to get conversation before or after that timstamp. This allows paging.
 ```javascript
- client.getConversations({direction: Circuit.Enums.SearchDirection.BEFORE, numberOfConversations: 10})
-   .then(conversations => console.log(`Count ${conversations.length}`))
+client.getConversations({direction: Circuit.Enums.SearchDirection.BEFORE, numberOfConversations: 10})
+  .then(conversations => console.log(`Count ${conversations.length}`))
 ```
 
 ### Listen for events ###
