@@ -17,10 +17,10 @@ https://circuitsandbox.net/sdk/ with most APIs described at in the [Client](http
 
 
 ### Usage
-Include circuit.min.js in your app by adding the line below to your HTML file.
+Include circuit.js in your app by adding the line below to your HTML file.
 
 ```html
-<script type="text/javascript" src="https://circuitsandbox.net/circuit.min.js"></script>`
+<script type="text/javascript" src="https://circuitsandbox.net/circuit.js"></script>`
 ```
 
 ### Examples
