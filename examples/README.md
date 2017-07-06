@@ -1,13 +1,13 @@
 ## Circuit JS SDK Examples
 
-### Try the live examples
+### Live examples on rawgit
 
 Try them [here](https://rawgit.com/circuit/circuit-js-sdk/master/examples/index.html).
 
 Use your own sandbox account, or one of the playground accounts:
 * todo
 
-Try them live on [rawgit](https://rawgit.com/circuit/circuit-js-sdk/master/examples/index.html) or host them yourself.
+
 
 ### Running examples locally
 
