@@ -1,6 +1,8 @@
 Circuit JavaScript SDK
 ======================
 
+[![license](https://img.shields.io/github/license/circuit/circuit-js-sdk.svg)](https://github.com/circuit/circuit-js-sdk/blob/master/LICENSE)
+
 The Circuit JavaScript SDK can be used **client-side** as a regular JS API, or with Node.js as **server-side** SDK.
 
 
