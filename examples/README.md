@@ -7,8 +7,10 @@ Each html file is an independent example to show a particular use case. More to 
 Try them [live on rawgit](https://rawgit.com/circuit/circuit-js-sdk/master/examples/index.html).
 
 Use your own sandbox account, or one of the following playground accounts:
-* coming...
-
+* kim.jackson@mailinator.com
+* maeva.barnaby@mailinator.com
+* derek.hopkins@mailinator.com
+Password: GoCircuit1!
 
 
 ### Running examples locally
