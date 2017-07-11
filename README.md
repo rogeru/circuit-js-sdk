@@ -15,6 +15,8 @@ Circuit JavaScript SDK
 ### API Reference
 https://circuitsandbox.net/sdk/ with most APIs described in the [Client](https://circuitsandbox.net/sdk/classes/Client.html) class.
 
+More info at [circuit.github.io](https://circuit.github.io/).
+
 
 ### Usage
 Include circuit.js in your app by adding the line below to your HTML file.
