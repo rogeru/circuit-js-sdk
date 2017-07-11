@@ -10,7 +10,7 @@ Use your own sandbox account, or one of the following playground accounts:
 * kim.jackson@mailinator.com
 * maeva.barnaby@mailinator.com
 * derek.hopkins@mailinator.com
-Password: GoCircuit1!
+Password: GoCircuit!1
 
 
 ### Running examples locally
